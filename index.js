@@ -84,7 +84,10 @@ io.on("connection", (socket) => {
 	socket.data.roomId = payload.roomId
 	socket.data.username = payload.username
 	socket.data.uid = payload.uid
+	console.log("socket connected: ", payload)
 	socket.on("newMessage", (msg) => {
 		socket.broadcast.to(socket.data.roomId).emit("newMessage", {sender:socket.data.username, msg:msg})
+		socket.emit("newMessage", {sender:socket.data.username, msg:msg})
+		console.log(msg)
 	});
 });
