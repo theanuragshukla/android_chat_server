@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const http = require("http").Server(app);
 const bcrypt = require('bcryptjs')
 const saltRounds = 10;
@@ -11,8 +11,6 @@ const secret= process.env.JWT_SECRET_KEY
 const Redis = require("ioredis");
 const fs = require("fs");
 const crypto = require('crypto')
-
-
 const hash = async (message) => crypto.createHash('sha256').update(message).digest('hex')
 const redis = new Redis({
 	host: "redis-14759.c264.ap-south-1-1.ec2.cloud.redislabs.com",
