@@ -10,7 +10,8 @@ const jwt = require('jsonwebtoken')
 const secret= process.env.JWT_SECRET_KEY
 const Redis = require("ioredis");
 const fs = require("fs");
-const crypto = require('crypto')
+const crypto = require('crypto');
+const { emit } = require("process");
 const hash = async (message) => crypto.createHash('sha256').update(message).digest('hex')
 const redis = new Redis({
 	host: "redis-14759.c264.ap-south-1-1.ec2.cloud.redislabs.com",
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
 // needs sanitization of data in every POST
 
 app.post("/joinRoom",async (req, res) => {
-	const {authToken, roomID} = req.body
+	const {authToken, roomId} = req.body
 
 	console.log(req.body)
 
@@ -43,7 +44,7 @@ app.post("/joinRoom",async (req, res) => {
 		return
 	}
 
-	const token = jwt.sign({uid:authToken, roomID:roomID, username:dups.rows[0].username}, secret, { expiresIn: '1d' })
+	const token = jwt.sign({uid:authToken, roomId:roomId, username:dups.rows[0].username}, secret, { expiresIn: '1d' })
 	res.status(200).json({
 		sessionToken: token,
 	});
@@ -84,8 +85,9 @@ io.on("connection", (socket) => {
 	socket.data.roomId = payload.roomId
 	socket.data.username = payload.username
 	socket.data.uid = payload.uid
+	socket.join(socket.data.roomId)
 	console.log("socket connected: ", payload)
 	socket.on("newMessage", (msg) => {
-		socket.broadcast.to(socket.data.roomId).emit("newMessage", {from:socket.data.username, message:msg})
+		io.sockets.in(socket.data.roomId).emit("newMessage", {from:socket.data.username, message:msg})
 	});
 });
